@@ -7,15 +7,13 @@ This tool is intended to be used in a [Known Beacons attack](https://census-labs
 * Flood known beacons
 * Sniff client probes
 
-If the client probes for an SSID in your beacon list, use your preferred tool to run rogue access point
-
-The flood rate and channel hop delay will need to be altered for optimal results.
+If the client probes for an SSID in your beacon list, use your preferred tool to run rogue access point. The flood rate and channel hop delay will need to be altered for optimal results.
 
 ### USAGE
 
 ```
 ./flood-kick-sniff.sh
-usage: ./test3 [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)] [-i interface] [-K file] [-m mac] [-t number]
+usage: ./test3 [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)] [-i interface] [-K file] [-m file] [-t number]
 	-a		enable transmitter mac address filtering
 	-f		enable beacon flooding
 	-h		enable channel hopping
