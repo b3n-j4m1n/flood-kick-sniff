@@ -15,13 +15,15 @@ Interface 1:
 Interface 2:
 * Deauthenticate clients
 
-If the client probes for an SSID in your beacon list, use your preferred tool to configure an indistinguishable rogue access point. The flood rate and channel hop delay will need to be modified for optimal results.
+If the client probes for an SSID in your beacon list, use your preferred tool to configure an indistinguishable rogue access point. The flood rate and channel hop delay will likely need to be modified for optimal results.
+
+The default channels are hardcoded for Australia, check [your local regulations](https://en.wikipedia.org/wiki/List_of_WLAN_channels) before running the tool.
 
 ### USAGE:
 
 ```
 ./flood-kick-sniff.sh
-usage: ./test3 [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)] [-i interface] [-K file] [-m file] [-t number]
+usage: ./flood-kick-sniff.sh [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)] [-i interface] [-K file] [-m file] [-t number]
 	-a		enable transmitter mac address filtering
 	-f		enable beacon flooding
 	-h		enable channel hopping
@@ -36,7 +38,7 @@ usage: ./test3 [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)]
 	-m <file>	specify non-default mac filter list
 	-r <number>	beacon flood rate per second, default = 50
 	-t <number>	time in seconds between channel hopping, default = 15
-	example: ./test3 -afhs -b /opt/dict/beacon-list -c "1 3 5 7 9 11" -i wlan0 -m aa:aa:aa:aa:aa:aa -t 30 -r 25 -D wlan1 -C "1 6 11" -K /tmp/kill-list
+	example: ./flood-kick-sniff.sh -afhs -b /opt/dict/beacon-list -c "1 3 5 7 9 11" -i wlan0 -m aa:aa:aa:aa:aa:aa -t 60 -r 200 -D wlan1 -C "1 6 11" -K /tmp/kill-list
 ```
 
 ### DEPENDENCIES:
