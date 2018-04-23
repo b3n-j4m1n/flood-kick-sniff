@@ -9,8 +9,6 @@ ghz2='1 2 3 4 5 6 7 8 9 10 11 12 13'
 ghz5='36 38 40 42 44 46 48 50 52 54 56 58 60 62 64 100 102 104 106 108 110 112 116 132 134 136 138 140 142 144 149 151 153 155 157 159 161 165'
 channels=$ghz2
 all="$ghz2 $ghz5"
-channel_head='[ '$ghz2' ]'
-deauth_channel_head='[ '$ghz2' ]'
 
 init() {
 	if [[ $initialise = 'true' ]]
@@ -25,7 +23,7 @@ init() {
 			sleep 1
 			iwconfig $interface mode monitor
 			ifconfig $interface up
-			sleep 1
+			sleep 3
 		fi
 		if [[ ! -z $deauth_interface ]]
 		then
@@ -34,21 +32,29 @@ init() {
 			sleep 1
 			iwconfig $deauth_interface mode monitor
 			ifconfig $deauth_interface up
-			sleep 1
+			sleep 3
 		fi
 		echo
 	fi
 }
 
 headers() {
-	if [[ ! -z $hop_head || ! -z $sniff_head || ! -z $flood_head ]]
+	if [[ ! -z $hop_head ]]
 	then
-		echo $hop_head$sniff_head$flood_head$channel_head
+		echo $hop_head$sniff_head$flood_head'[ '$channels' ]'
+	elif [[ ! -z $sniff_head || ! -z $flood_head ]]
+	then
+		echo $sniff_head$flood_head
 	fi
 
-	if [[ ! -z $deauth_head ]]
+	if [[ $deauthentication = 'true' ]]
 	then
-		echo $deauth_head$deauth_channel_head
+		if [[ ! -z $deauth_channels ]]
+		then
+			echo $deauth_head"[ $deauth_channels ]" | tr ',' ' ' | sed 's/  -c//'
+		else
+			echo $deauth_head"[ $ghz2 ]"
+		fi
 	fi
 }
 
@@ -59,6 +65,7 @@ hop() {
 		do
 			if [[ $sniff_probes = 'true' ]]
 			then
+				echo "SOURCE			CHANNEL	SSID"
 				iwconfig $interface channel $channel
 				sleep $delay
 			else
@@ -75,8 +82,7 @@ sniff() {
 	if [[ $sniff_probes = 'true' ]]
 	then
 		echo
-		echo "SOURCE			CHANNEL	SSID"
-		tshark -i $interface -I -n -Y 'wlan.fc.type_subtype == 0x0004 and !(wlan.ssid == "") and wlan.tag.number == 0'$macs -T fields -e wlan.ta -e wlan_radio.channel -e wlan.ssid 2>/dev/null &
+		tshark -i $interface -I -n -Y 'wlan.fc.type_subtype == 0x0004'' and !(wlan.ssid == "")'' and wlan.tag.number == 0'"$macs" -T fields -e wlan.ta -e wlan_radio.channel -e wlan.ssid 2>/dev/null &
 	fi
 }
 
@@ -97,7 +103,7 @@ deauth() {
 filter() {
 	if [[ $target_macs = 'true' ]]
 	then
-		macs=$(echo $(< $mac_list) | sed -r 's/ +/ || /g; s/^/and /')
+		macs=$(cat $mac_list | tr '\n' ' ' | sed 's/.$//' | sed 's/ / || wlan.ta == /g' | sed 's/^/ and wlan.ta == /')
 	fi
 }
 
@@ -122,7 +128,7 @@ usage() {
 	echo	"	-m <file>	specify non-default mac filter list"
 	echo	"	-r <number>	beacon flood rate per second, default = 50"
 	echo	"	-t <number>	time in seconds between channel hopping, default = 15"
-	echo	"	example: $0 -afhs -b /opt/dict/beacon-list -c \"1 3 5 7 9 11\" -i wlan0 -m aa:aa:aa:aa:aa:aa -t 30 -r 25 -D wlan1 -C \"1 6 11\" -K /tmp/kill-list"
+	echo	"example: $0 -afhs -b /opt/dict/beacon-list -c \"1 3 5 7 9 11\" -i wlan0 -m aa:aa:aa:aa:aa:aa -t 30 -r 25 -D wlan1 -C \"1 6 11\" -K /tmp/kill-list"
 	exit 1
 }
 
@@ -162,7 +168,6 @@ do
 			else
 				channels=$OPTARG
 			fi
-			channel_head='[ '$channels' ]'
 		;;
 		C)
 			if [[ $OPTARG = '5ghz' ]]
@@ -174,7 +179,6 @@ do
 			else
 				deauth_channels=' -c '$(echo $OPTARG | tr ' ' ',')
 			fi
-			deauth_channel_head='[ '$(echo $deauth_channels | tr ',' ' ' | cut -c 3-)' ]'
 		;;
 		i)
 			interface=$OPTARG
@@ -207,9 +211,9 @@ fi
 
 init
 headers
+filter
 sniff
-hop
+hop &
 flood
 deauth
-filter
 cleanup
