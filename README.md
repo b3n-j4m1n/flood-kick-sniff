@@ -40,6 +40,8 @@ usage: ./flood-kick-sniff.sh [-afhsx] [-D interface] [-b file] [-c channel(s)] [
 	-t <number>	time in seconds between channel hopping, default = 15
 example: ./flood-kick-sniff.sh -afhs -b /opt/dict/beacon-list -c "1 3 5 7 9 11" -i wlan0 -m aa:aa:aa:aa:aa:aa -t 60 -r 200 -D wlan1 -C "1 6 11" -K /tmp/kill-list
 ```
+![](example.png)
+
 
 ### DEPENDENCIES:
 
