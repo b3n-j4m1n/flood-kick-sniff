@@ -29,11 +29,11 @@ usage: ./flood-kick-sniff.sh [-afhsx] [-D interface] [-b file] [-c channel(s)] [
 	-h		enable channel hopping
 	-s		enable probe sniffing
 	-x		disable initialisation
-	-D <interface>	enable deauthentication on specified secondary interface
-	-b <file>	specify beacon list, default is ./beacon-list
-	-c <channel(s)>	specify primary interface channel(s), default = 2 GHz spectrum, "5ghz" = 5 GHz spectrum, "all" = all, or list channels e.g. "1 3 7"
-	-C <channel(s)>	specify secondary interface channel(s)
 	-i <interface>	specify primary interface for flooding / hopping / sniffing
+	-c <channel(s)>	specify primary interface channel(s), default = 2 GHz spectrum, "5ghz" = 5 GHz spectrum, "all" = all, or list channels e.g. "1 3 7"
+	-D <interface>	enable deauthentication on specified secondary interface
+	-C <channel(s)>	specify secondary interface channel(s)
+	-b <file>	specify beacon list, default is ./beacon-list
 	-K <file>	specify kill list, default is ./kill-list
 	-m <file>	specify client list, default is ./mac-list
 	-r <number>	beacon flood rate per second, default = 50
