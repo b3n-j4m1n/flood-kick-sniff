@@ -13,12 +13,12 @@ all="$ghz2 $ghz5"
 init() {
 	if [[ $initialise = 'true' ]]
 	then
-		echo "initialising..."
+		echo "[*] initialising..."
 		airmon-ng check kill > /dev/null 2>&1 &
 		sleep 2
 		if [[ ! -z $interface ]]
 		then
-			echo "starting primary interface..."
+			echo "[*] starting primary interface..."
 			ifconfig $interface down
 			sleep 1
 			iwconfig $interface mode monitor
@@ -27,7 +27,7 @@ init() {
 		fi
 		if [[ ! -z $deauth_interface ]]
 		then
-			echo "starting secondary interface..."
+			echo "[*] starting secondary interface..."
 			ifconfig $deauth_interface down
 			sleep 1
 			iwconfig $deauth_interface mode monitor
@@ -41,19 +41,19 @@ init() {
 headers() {
 	if [[ ! -z $hop_head ]]
 	then
-		echo $hop_head$sniff_head$flood_head'[ '$channels' ]'
-	elif [[ ! -z $sniff_head || ! -z $flood_head ]]
+		echo "[*] "$hop_head$sniff_head$flood_head'[ '$channels' ]'
+	elif [[ ! -z "[*] "$sniff_head || ! -z $flood_head ]]
 	then
-		echo $sniff_head$flood_head
+		echo "[*] "$sniff_head$flood_head
 	fi
 
 	if [[ $deauthentication = 'true' ]]
 	then
 		if [[ ! -z $deauth_channels ]]
 		then
-			echo $deauth_head"[ $deauth_channels ]" | tr ',' ' ' | sed 's/  -c//'
+			echo "[*] "$deauth_head"[ $deauth_channels ]" | tr ',' ' ' | sed 's/  -c//'
 		else
-			echo $deauth_head"[ $ghz2 ]"
+			echo "[*] "$deauth_head"[ $ghz2 ]"
 		fi
 	fi
 }
@@ -65,12 +65,13 @@ hop() {
 		do
 			if [[ $sniff_probes = 'true' ]]
 			then
-				echo "SOURCE			CHANNEL	SSID"
+				echo "[$channel]"
+				echo "[*] SOURCE		CHANNEL SSID"
 				iwconfig $interface channel $channel
 				sleep $delay
 			else
 				echo
-				echo "CHANNEL $channel"
+				echo "[*] CHANNEL $channel"
 				iwconfig $interface channel $channel
 				sleep $delay
 			fi
@@ -111,32 +112,32 @@ filter() {
 
 cleanup() {
 	trap 'wait' EXIT
-	trap 'kill 0 & printf "\nkilling background processes...\n"' SIGINT
+	trap 'kill 0 & printf "\n[*] killing background processes...\n"' SIGINT
 }
 
 usage() {
-	echo	usage: $0 [-Ufhsx] [-i interface] [-c channel(s)] [-b file] [-u file] [-t number] [-I interface] [-C channel(s)] [-a file]
+	echo	"usage: $0 [-Ufhsx] [-i interface] [-c channel(s)] [-b file] [-u file] [-t number] [-I interface] [-C channel(s)] [-a file]"
 	echo
-	echo		-x		disable initialisation (airmon-ng check kill, ifconfig wlan0 down/up, etc.)
+	echo	"	-x		disable initialisation (airmon-ng check kill, ifconfig wlan0 down/up, etc.)"
 	echo
-	echo	[*] interface 1
-	echo		-i <interface>	specify the primary interface for flooding / hopping / sniffing
-	echo		-c <channel(s)>	specify primary interface channel(s) (default = 2 GHz spectrum. "5ghz" = 5 GHz spectrum. "all" = all. list channels e.g. "1 3 7")
-	echo		-f		enable beacon flooding
-	echo		-h		enable channel hopping
-	echo		-s		enable probe sniffing
-	echo		-U		filter output for only clients in the client mac address list
-	echo		-r <number>	beacon flood rate per second (default = 50)
-	echo		-t <number>	time in seconds between channel hopping (default = 15)
-	echo		-u <file>	specify non-default client list (default is ./client-list)
-	echo		-b <file>	specify non-default beacon list (default is ./beacon-list)
+	echo	"[*] interface 1"
+	echo	"	-i <interface>	specify the primary interface for flooding / hopping / sniffing"
+	echo	"	-c <channel(s)>	specify primary interface channel(s) (default = 2 GHz spectrum. \"5ghz\" = 5 GHz spectrum. \"all\" = all. list channels e.g. \"1 3 7\")"
+	echo	"	-f		enable beacon flooding"
+	echo	"	-h		enable channel hopping"
+	echo	"	-s		enable probe sniffing"
+	echo	"	-U		filter output for only clients in the client mac address list"
+	echo	"	-r <number>	beacon flood rate per second (default = 50)"
+	echo	"	-t <number>	time in seconds between channel hopping (default = 15)"
+	echo	"	-u <file>	specify non-default client list (default is ./client-list)"
+	echo	"	-b <file>	specify non-default beacon list (default is ./beacon-list)"
 	echo
-	echo	[*] interface 2
-	echo		-I <interface>	enable deauthentication on specified secondary interface
-	echo		-C <channel(s)>	specify secondary interface channel(s)
-	echo		-a <file>	specify non-default ap list (default is ./ap-list)
+	echo	"[*] interface 2"
+	echo	"	-I <interface>	enable deauthentication on specified secondary interface"
+	echo	"	-C <channel(s)>	specify secondary interface channel(s)"
+	echo	"	-a <file>	specify non-default ap list (default is ./ap-list)"
 	echo
-	echo	example: ./flood-kick-sniff.sh -Ufhs -b /jobs/corp/beacon.list -c "1 3 5 7 9 11" -i wlan0 -u /jobs/corp/client.list -t 30 -r 25 -I wlan1 -C "1 6 11" -a /jobs/corp/ap.list
+	echo	"example: ./flood-kick-sniff.sh -Ufhs -b /jobs/corp/beacon.list -c \"1 3 5 7 9 11\" -i wlan0 -u /jobs/corp/client.list -t 30 -r 25 -I wlan1 -C \"1 6 11\" -a /jobs/corp/ap.list"
 	exit 1
 }
 
