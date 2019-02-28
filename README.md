@@ -9,6 +9,10 @@ this script is intended to be used in a Known Beacons attack, there is a very go
 
 you can use this during wireless security testing to identify client devices that have OPEN networks saved in their preferred network list.
 
+the script works as a wrapper for several other tools.
+* interface 1 floods beacons with mdk3, sniffs probes with tshark, and hops channels with iwconfig
+* interface 2 deauthenticates with mdk3 (channel hopping is handled by the mdk3 deauthentication option)
+
 the 2 and 5 GHz ranges are hardcoded for use in Australia, so check [your local regulations](https://en.wikipedia.org/wiki/List_of_WLAN_channels) before running the script with default options.
 
 ### USAGE:
@@ -21,10 +25,6 @@ the 2 and 5 GHz ranges are hardcoded for use in Australia, so check [your local 
   - flood beacons from a dictionary of well known ssids (Guest, Free Public WiFi, Airport Free Wi-Fi, SkyBus-Free-Wifi, etc.) [interface 1]
   - sniff for probe responses [interface 1]
 * if a client probes for a ssid in the beacon list, then they have that named network in their preferred network list and are vulnerable to a rogue access point attack
-
-the script works as a wrapper for several other tools.
-* interface 1 floods beacons with mdk3, sniffs probes with tshark, and hops channels with iwconfig
-* interface 2 deauthenticates with mdk3 (channel hopping is handled by the mdk3 deauthentication option)
 
 ```
 # ./flood-kick-sniff.sh
