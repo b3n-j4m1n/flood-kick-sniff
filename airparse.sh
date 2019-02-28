@@ -22,25 +22,25 @@ fi
 
 # format airodump-ng output and collect access point mac addresses
 awk '1;/Station MAC, First time seen/{exit}' "$file" > ap.tmp
-cat ap.tmp | grep "$ssid" | cut -d "," -f 1 > ./"$ssid"-ap.list
+cat ap.tmp | grep "$ssid"',' | cut -d "," -f 1 > ./"$ssid"-ap.list
 
 # format airodump-ng output and collect client mac addresses associated with above access points
 awk '/Station MAC, First time seen/{f=1;}f' "$file" > station.tmp
 while read line
 do
 	grep "$line" station.tmp | cut -d "," -f 1
-done < ./"$ssid"-ap.list > ./tmp/"$ssid"-client.list
+done < ./"$ssid"-ap.list > ./"$ssid"-client.list
 
-cat ./"$ssid"-ap.list > kill-list
-cat ./"$ssid"-client.list > mac-list
+cat ./"$ssid"-ap.list > ap-list
+cat ./"$ssid"-client.list > client-list
 
 rm station.tmp
 rm ap.tmp
 rm ./"$ssid"-ap.list
 rm ./"$ssid"-client.list
 
-echo "[*] "$ssid" mac addresses, saved to ./kill-list"
-cat kill-list
+echo "[*] "$ssid" mac addresses, saved to ./ap-list"
+cat ap-list
 echo
-echo "[*] client mac addresses, saved to ./mac-list"
-cat mac-list
+echo "[*] client mac addresses, saved to ./client-list"
+cat client-list
